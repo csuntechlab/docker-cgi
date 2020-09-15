@@ -1,0 +1,80 @@
+PROJECT README
+
+PROJECT GOAL:
+	To create an Apache module that allows a user to run one or more CGI programs from within a container.
+	
+
+PURPOSE:
+	To allow the develop to maintain a entire programming stack, independent of the main OS.
+	To create an area of isolation between the user's code and the main OS environment.
+	To eliminate the need to deploy the user's container as an independent web-server
+
+Assumptions:
+	The associated container can be created given a "CONTEXT" defined as a PATH or URL.
+	The CGI program is a given ENTRY point within the container.
+		(https://docs.docker.com/engine/reference/commandline/build/)
+
+	We assume that only one such CGI program is delivered via the container
+	We assume that only one such CGI program is delivered within a given directory
+
+	Given the appropriate .htaccess directives, these assumptions allows the client 
+	to invoke the web application via a simple URL, e.g., https:///~/directory/
+	(Refer to Apache directives: DirectoryIndex and Rewrite_Rule)
+
+	It is also planned that these assumptions, with further refinement of this project, can be removed.
+	Under this refinement, the following URLs are possible:
+		https:///~/directory/program1
+		https:///~/directory/program2
+		https:///~/directory/program3
+
+	Each of the programs (program1, program2, program3) may use the same container or different containers.
+
+PROJECT OBJECTIVES:
+	To write a shim-code to manage the associated container, and to appropriate invoke the CGI program.
+	To minimize the amount of steps the user needs to perform to configure their environment.
+	To define the most simplistic config file to derive the most appropriate Apache Directors for the module.
+
+
+APPROACHES:
+	We have defined three major approaches as a process to the development the final Apache module.
+	These approaches are as follows:
+
+		* Shim code: develop appropriate code, etc., 
+			- to manage the associated container
+			- to invoke the appropriate CGI program on behalf of the Apache server
+
+			Installation Notes:
+				- user places shim code into the appropriate web-folder
+				- user places config file into the appropriate web-folder
+				- the Apache server calls the shim code directly as a CGI program
+
+			Client URL:
+				- the client makes the following call https:///~/directory/<shim>
+
+
+		* Handler
+			- transform the shim code to an appropriate Apache Handler
+
+			Installation Notes:
+				- admin places the shim code in a well-known cgi-bin directory, e.g. "/cgi-bin/docker-cgi"
+				- user places config file with a well-known extension, e.g., ".docker-cgi" into the appropriate web-folder
+				- .htaccess defines the handler for invoking the shim code
+					E.g., 
+						AddHandler dockerfile .docker-cgi
+						Action dockerfile "/cgi-bin/docker-cgi"
+			
+			Usage Notes
+				- Client URL: https:///~/directory/program.<extention>
+
+		* Module:
+			- define appropriate Apache directives to subsume the role of the config file
+			- transform the existing code to allow be used as a Apache Module
+			- rewrite the code into C (See: http://linuxdocs.org/HOWTOs/Apache-Overview-HOWTO-12.html)
+
+			E.g., the following envisioned Apache directives could be used to to 
+
+				ContainerEngine off | docker | other    # initial implementation will only be for docker containers
+				ContainerCGI   context1 program1			
+				ContainerCGI   context2 program2
+				ContainerCGI   context1 program3
+

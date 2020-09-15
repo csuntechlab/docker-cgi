@@ -1,0 +1,331 @@
+#! /bin/bash
+
+# For DEBUGGING
+shopt -s expand_aliases
+alias docker="echo docker"
+
+###################################################################################################################################################
+# The primary purpose of this script is to execute a CGI program within a docker container.
+#
+# The system will automatically build an image, create a container, start the container, and execute a CGI program within the container
+# These actions occur when a client URL references the CGI program and is subsequently invoked by the Apache server via the CGI protocol.
+#
+# To minimize the execution time, the system will maintain the image and container.  Moreover, the container will remain running
+# remain running as needed.  That is to say that the cost to build the image and create the container only occurs necessary.
+#
+# The user provides a configuration file, e.g., command.docker-cgi, to define the following items:
+#
+#    ENTRY:     the entry point (a command) with the container to be executed. (See https://docs.docker.com/engine/reference/commandline/exec/)
+#    CONTEXT:  the context needed to build a docker image. (See https://docs.docker.com/engine/reference/commandline/build/)
+# 
+# The configuration file may also define a number of entries into two associative arrays: HEADER and ENVS
+#
+#    ENVS:     an associative array of environment variables and their values to be provide to the CGI program
+#             e.g.,  ENVS["myVar"]="myValue"
+#
+#    HEADER:  an associative array of HTTP header fields to be include in the HTTP response header.
+#             e.g., HEADER["X-Powered-By"]="Docker CGI"
+#
+# NOTE that this configuration file is sourced by this bash script. Although, the configuration file may contain other valid bash command
+#   or directives, the user should refrain from such.
+#
+# Since the image and container can be rebuilt automatically, the system is free to delete either the image, the container,
+# or both any anytime.  The system might take such action to minimize system overhead, to eliminate unused or abandoned containers,
+# etc, etc.   ---  Hence, the user needs to ensure the CONTEXT is maintained to always produce a working CGI program.
+#
+# Under the primary mode of operation, the Apache Server will automatically invoke this script via the following Apache Action Directive:
+# (See http://httpd.apache.org/docs/current/mod/mod_actions.html)
+#
+#    AddHandler dockerfile .docker-cgi
+#    Action dockerfile "/cgi-bin/docker-cgi"
+#
+# This script can also be invoked directly by the user to test and manage their environment.
+#      WELL, MAYBE --- I NEED TO DETERMINE HOW TO GET PERMS WORKING.   (sudo -u Apache docker-cgi build FILE ???)
+#      AT VERY LEAST -- THIS PORTION OF THE SCRIPT CAN BE USED BY THE SYSTEM TO TEST VARIOUS SUBCOMPONENTS
+#
+# The following is the various usages of the script.  Note that the second argument is the docker command to be executed. Refer
+# to the docker documentation for additional information: https://docs.docker.com/engine/reference/commandline/docker.
+#
+# The third argument is the user-supplied configuration file, e.g., FILE="sample.docker-cgi"
+#
+# This script "/usr/lib/cgi-bin/docker-cgi.bash"
+print_usage () {
+    printf "Usage:  docker-cgi\n"
+    printf "\n"
+    printf "\t Used as a Apache Handler\n"
+    printf "\t The following environment variables are expected to be defined:\n"
+    printf "\t\t PATH_INFO:\t\t          the URI path of the .docker-cgi file\n"
+    printf "\t\t PATH_TRANSLATED:    the file system path of the .docker-cgi file\n"
+    printf "\t\t REDIRECT_HANDLER:   the name of the handler: i.e., docker-cgi\n"
+    printf "\n"
+    printf "Usage: docker-cgi [DIRECTIVE] FILE\n"
+    printf "\n"
+    printf "\t DIRECTIVE is an action to be taken. A list of available DIRECTIVEs are provided below\n"
+    printf "\t FILE\t is the name of a configuration file that used to invoke the Apache Handler\n"
+    printf "\t\t This file has the extension of .docker-cgi\"\n"
+    printf "\n"
+    printf "Available DIRECTIVEs include:\n"
+    printf "\n"
+    printf "\t help:\t  to provide this usage message\n"
+    printf "\t build:\t  to build the a local image from the CONTEXT\n"
+    printf "\t rmi:\t  to remove the image associated with the CONTEXT\n"
+    printf "\t build:\t  to build the container from the associated image\n"
+    printf "\t start:\t  to start the associated container\n"
+    printf "\t exec:\t  to execute a CGI program defined by the ENTRY variable\n"
+    printf "\t stop:\t  to start the associated container\n"
+    printf "\t rm:\t  to remove the associated container\n"
+    printf "\t headers: to emit the HTTP response headers defined within FILE\n"
+    printf "\t envs:\t  to emit the environment variables that will be passed to to ENTRY program\n"
+    printf "\n"
+    printf "For testing purposes, this script can be invoked as if it were being called by the Apache server as follows:\n"
+    printf "\n"
+    printf "\t $ PATH_TRANSLATED=$FILE docker-cgi \n"
+    printf "\n"
+    printf "Caveat/Bugs:\n"
+    printf "\t - When invoked as a CGI Handler from the command line:\n"
+    printf "\t   the PATH_INFO will not be set correctly.\n"
+    printf "\t - If PATH_INFO or REDIRECT_HANDLER are not define, default values are assigned\n"
+    printf "\n"
+
+}
+
+
+###################################################################################################################################################
+# The process by which this script operates is as follows:
+#   0. Declare and Define program variables and functions
+#   1. Source the user-specified .docker-cgi file
+#   2. Define or Redefine environment variables
+#   3. Perform directive provided via script invocation
+#   4. Call docker start
+#      If error:
+#        a. build image as necessary
+#        b. build container as necessary
+#   5. Emit headers
+#   6. Build the cgi environment
+#   7. Call docker exec
+
+
+
+
+###################################################################################################################################################
+# 0. Declare and define program variables and functions
+
+
+declare PROGRAM      # Identifies the actual CGI program to be executed
+declare CONTEXT      # Provides the docker context to build the image
+declare -A HEADER    # Array of additional HTTP header fields
+declare -A ENVS      # Array of additional environment variables (and values) to be provided to the CGI PROGRAM
+
+declare -a CGI_VARIABLES=(
+    CONTENT_TYPE CONTENT_LENGTH  GATEWAY_INTERFACE
+    HTTP_HOST    HTTP_USER_AGENT QUERY_STRING
+    REQUEST_METHOD REQUEST_URI   SERVER_PROTOCOL
+    SCRIPT_FILENAME SCRIPT_NAME  SERVER_NAME
+    SERVER_PORT PATH_INFO
+    )   
+
+declare -a HANDLER_VARIABLES=(
+    PATH_INFO
+    PATH_TRANSLATED
+    REDIRECT_HANDLER
+    )	
+
+
+report_error () {
+    printf "$*\n" >2
+    exit 1
+}
+
+perform_directive () {
+
+    case $1 in
+
+    help )
+        print_usage;
+        ;;
+	
+    build )
+	    docker build --tag ${IMAGE_TAG} ${CONTEXT}
+	    ;;
+	rmi )
+	    docker rmi ${IMAGE_TAG}
+	    ;;
+
+	create )
+	    docker create --name ${CONTAINER_TAG} --interactive --tty ${IMAGE_TAG}
+	    ;;
+	start )
+	    docker start ${CONTAINER_TAG}
+	    ;;
+	exec )
+	    ENV_STRING=$(build_cgi_environment)
+	    docker exec ${ENV_STRING} ${CONTAINER_TAG} ${ENTRY} 
+	    ;;
+	stop )
+	    docker stop ${CONTAINER_TAG}
+	    ;;
+	rm )
+	    docker rm ${CONTAINER_TAG}
+	    ;;
+
+	headers )
+	    emit_headers
+	    ;;
+	
+	envs )
+	    emit_envs
+	    ;;
+    esac
+}
+
+
+emit_headers () {
+
+    for key in "${!HEADER[@]}"; do 
+	echo "${key}: ${HEADER[${key}]}"
+    done
+
+}    
+
+emit_envs () {
+
+    for env in "${CGI_VARIABLES[@]}" ; do
+	eval value=\${$env}
+	echo "$env=\"$value\" "
+    done
+}
+
+
+build_cgi_environment () {
+  # Reset particular environment variables
+
+  for env in ${CGI_VARIABLES[@]} ; do
+      eval value=\${$env}
+      echo -n " -e $env=\"$value\" "
+  done
+
+  for key in "${!ENVS[@]}"; do 
+     echo -n " -e $key=\"${ENVS[$key]}\""
+  done
+}
+
+
+
+
+
+###################################################################################################################################################
+# 1. Source the user-specified configuration file, i.e., the .docker-cgi file
+#
+#    Obtaining the configuration depends on how this script was invoked
+#    If called via the CGI Handler then it will have zero arguments, and
+#    the following environment variables will be defined
+#        PATH_TRANSLATED, PATH_INFO, REDIRECT_HANDLER
+#    Otherwise, the configuration file is the second arguement to the script
+
+{ 
+     if [ $# -eq 0 ] ; then
+        [ -z "${PATH_TRANSLATED}" ] && report_error "Script invoked improperly"
+        CONFIGURATION_FILE=${PATH_TRANSLATED}
+    else
+        CONFIGURATION_FILE="${2}"
+    fi
+    : ${REDIRECT_HANDLER:=docker-cgi}
+    : ${PATH_INFO:=${CONFIGURATION_FILE}}
+
+
+    [ ! -f ${CONFIGURATION_FILE} ] && report_error "Configuration file not found"
+    source ${CONFIGURATION_FILE}
+
+
+    [ -z "$CONTEXT" ] && report_error "Configuration file missing CONTEXT"
+    [ -z "${ENTRY}" ] && report_error "Configuration file missing ENTRY"
+
+}
+
+###################################################################################################################################################
+# 2. Define or Redefine environment variables
+#
+#    Generate repeatable unique tags,
+#    These tags are based upon the directory's inode number and the file's basename
+{
+
+    # Declare global VARIABLES for ease of configuration
+    HEADER["X-containerized"]="Engine: Docker, Context: ${CONTEXT}, Entry: ${ENTRY}"
+    ENVS["CONTAINER_INTERFACE"]="DOCKER CGI/0.1"
+
+    
+    DIR_TRANSLATED="$(dirname ${CONFIGURATION_FILE})"
+    NAME="$(basename -s .docker-cgi ${CONFIGURATION_FILE})"
+
+    DIR_INFO="$(dirname ${PATH_INFO})"
+
+    INODE=$(stat --format "%i" ${DIR_TRANSLATED} )
+
+
+    # The use of $USER is a poor person's protection protocol
+    # we might need to append a ":tag" to each of the following
+    CONTAINER_TAG="cgi.${USER}.${INODE}.${NAME}"
+    IMAGE_TAG="cgi.${USER}.${INODE}.${NAME}"
+
+    # Redefined CGI Variables because of the use of a handler
+    SCRIPT_FILENAME="${DIR_TRANSLATED}/${ENTRY}"
+    SCRIPT_NAME="${DIR_INFO}/${ENTRY}"
+
+}
+
+###################################################################################################################################################
+# 3. Perform directive provided via script invocation
+[ $# -gt 0 ] &&  perform_directive $1 && exit 0
+
+
+
+###################################################################################################################################################
+# 4. Call docker start
+#    If error:
+#    	a. build image if necessary
+#	    b. build container if necessary
+
+docker start ${CONTAINER_TAG}  2>/dev/nul || {
+
+    HASH=$(docker images --all --filter "reference=${IMAGE_TAG}" --quiet)
+    [ -z "${HASH}" ] &&  docker build --tag ${IMAGE_TAG} ${CONTEXT}
+    
+    HASH=$(docker ps --all --filter "name=${CONTAINER_TAG}" --quiet)
+    [ -z "${HASH}" ] && docker create --name ${CONTAINER_TAG} --interactive --tty ${IMAGE_TAG}
+  
+    docker start ${CONTAINER_TAG}  2>/dev/null
+}
+
+# 5. Emit headers
+# 6. Build the CGI Environment
+# 7. Call docker exec
+emit_headers 
+
+ENV_STRING=$(build_cgi_environment)
+docker exec ${ENV_STRING} ${CONTAINER_TAG} ${ENTRY} 
+
+
+
+
+
+
+
+
+# Sysadmin is free to delete
+#  - local image
+#  - local container
+# Sysadmin is free to stop containers
+# Sysadmin is free to augment performance options
+
+# Issues:
+# - how to delete containers
+# - how to delete images
+
+
+# - how to force
+#    -- a new build:  remove image
+#    -- a new create: remove the container
+
+
+
+
