@@ -18,7 +18,7 @@
   * To create an area of isolation between the user's code and the main OS environment.
   * To eliminate the need to deploy the user's container on an independent web-server
 
-## USAGE
+## USAGE:
 ```$ ./docker-cgi help ../docker-cgi.examples/cat.docker-cgi
 Usage: docker-cgi [DIRECTIVE] FILE
 Usage: docker-cgi help
@@ -84,7 +84,7 @@ Caveat/Bugs:
     ```
   * A Client can access the code via the URL: https:///~/directory/program.<extention>
 
-## ENHANCEMENTS
+## ENHANCEMENTS:
   * Create a Apache module:
     * define appropriate Apache directives to subsume the role of the config file
     * transform the existing code to allow be used as a Apache Module
