@@ -67,11 +67,13 @@ Caveat/Bugs:
     * e.g., https:///~/directory/ (Refer to Apache directives: DirectoryIndex and Rewrite_Rule)
 
   * It is also planned that these assumptions, with further refinement of this project, can be removed. Under this refinement, the following URLs are possible:
-```
-    https:///~/directory/program1
-    https:///~/directory/program2
-    https:///~/directory/program3
-```
+
+Future URL   | Current URL
+------------ | -------------
+    https:///~user/directory/program1 | https:///~user/directory/program1.docker-cgi
+    https:///~user/directory/program2 | https:///~user/directory/program2.docker-cgi
+    https:///~user/directory/program3 | https:///~user/directory/program3.docker-cgi
+
   Each of the programs (program1, program2, program3) may use the same container or different containers.
 
 ## INSTALLATION NOTES:
