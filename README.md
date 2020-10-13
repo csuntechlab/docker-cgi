@@ -48,7 +48,7 @@ Available DIRECTIVEs include:
 
 For testing purposes, this script can be invoked as if it were being called by the Apache server as follows:
 
-	 $ PATH_TRANSLATED= docker-cgi 
+	 $ PATH_TRANSLATED="" docker-cgi 
 
 Caveat/Bugs:
 	 - When invoked as a CGI Handler from the command line:
