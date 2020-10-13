@@ -1,24 +1,24 @@
 # Project Name: docker-cgi
 
-# BRIEF DESCRIPTION:
+## BRIEF DESCRIPTION:
   * an Apache module that allows a user to run one or more CGI programs from within a container.
 
-# PROJECT OBJECTIVES:
+## PROJECT OBJECTIVES:
   * To provide an Apache handler, as a first step, to manage the associated container, and to appropriate invoke the CGI program
   * To minimize the amount of steps the user needs to perform to configure their environment
   * To define the most simplistic configuration file to derive the most appropriate Apache Directives for the module
 
-# CURRENT STATUS:
+## CURRENT STATUS:
   * An Apache handler has been develop that, when trigger, will build, create, and start a docker container, and excute an encompassed CGI program.
   * The script that drives the handler also provides the user with a number of directors to control the process (mostly for debugging purposes)
   * A set of examples provided via the [docker-cgi.examples project](https://github.com/csuntechlab/docker-cgi.examples) 
 
-# PURPOSE:
+## PURPOSE:
   * To allow a developer to select their entire programming stack, independent of the main OS.
   * To create an area of isolation between the user's code and the main OS environment.
   * To eliminate the need to deploy the user's container on an independent web-server
 
-# USAGE
+## USAGE
 ```$ ./docker-cgi help ../docker-cgi.examples/cat.docker-cgi
 Usage: docker-cgi [DIRECTIVE] FILE
 Usage: docker-cgi help
@@ -56,7 +56,7 @@ Caveat/Bugs:
 	 - If PATH_INFO or REDIRECT_HANDLER are not define, default values are assigned
 ```
 
-# ASSUMPTIONS:
+## ASSUMPTIONS:
   * The associated container can be created given a "CONTEXT" defined as a PATH or URL.
   * The CGI program is a given ENTRY point within the container. (https://docs.docker.com/engine/reference/commandline/build/)
 
@@ -74,7 +74,7 @@ Caveat/Bugs:
 ```
   Each of the programs (program1, program2, program3) may use the same container or different containers.
 
-# INSTALLATION NOTES:
+## INSTALLATION NOTES:
   * A web adminstrator places the handler code in a well-known cgi-bin directory, e.g. "/cgi-bin/docker-cgi"
   * The developer places the configuratition, with the well-known extension, e.g., ".docker-cgi", into an appropriate web-folder
   * The developer places the an .htaccess file is said web-folder to invoke the application
@@ -84,7 +84,7 @@ Caveat/Bugs:
     ```
   * A Client can access the code via the URL: https:///~/directory/program.<extention>
 
-# ENHANCEMENTS
+## ENHANCEMENTS
   * Create a Apache module:
     * define appropriate Apache directives to subsume the role of the config file
     * transform the existing code to allow be used as a Apache Module
