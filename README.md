@@ -70,11 +70,11 @@ Caveat/Bugs:
 
 Future URL   | Current URL
 ------------ | -------------
-    https:///~user/directory/program1 | https:///~user/directory/program1.docker-cgi
-    https:///~user/directory/program2 | https:///~user/directory/program2.docker-cgi
-    https:///~user/directory/program3 | https:///~user/directory/program3.docker-cgi
+https:///~user/directory/program1 | https:///~user/directory/program1.docker-cgi
+https:///~user/directory/program2 | https:///~user/directory/program2.docker-cgi
+https:///~user/directory/program3 | https:///~user/directory/program3.docker-cgi
 
-  Each of the programs (program1, program2, program3) may use the same container or different containers.
+Each of the programs (program1, program2, program3) may use the same container or different containers.
 
 ## INSTALLATION NOTES:
   * A web adminstrator places the handler code in a well-known cgi-bin directory, e.g. "/cgi-bin/docker-cgi"
