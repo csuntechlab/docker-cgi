@@ -90,8 +90,7 @@ Caveat/Bugs:
   * Create a Apache module:
     * define appropriate Apache directives to subsume the role of the config file
     * transform the existing code to allow be used as a Apache Module
-		    * rewrite the code into C (See: http://linuxdocs.org/HOWTOs/Apache-Overview-HOWTO-12.html)
-
+    * rewrite the code into C (See: http://linuxdocs.org/HOWTOs/Apache-Overview-HOWTO-12.html)
     *	E.g., the following envisioned Apache directives could be used to to 
   ```
     ContainerEngine off | docker | other    # initial implementation will only be for docker containers
