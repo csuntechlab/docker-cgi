@@ -66,7 +66,7 @@ Caveat/Bugs:
   * Given the appropriate .htaccess directives, these assumptions allows the client to invoke the web application via a simple URL, 
     * e.g., https:///~/directory/ (Refer to Apache directives: DirectoryIndex and Rewrite_Rule)
 
-  * It is also planned that these assumptions, with further refinement of this project, can be removed. Under this refinement, the following URLs are possible:
+  * With further refinement of this project, URLs can be simplified, as examplified within the following tables:
 
 Future URL   | Current URL
 ------------ | -------------
