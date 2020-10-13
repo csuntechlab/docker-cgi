@@ -1,6 +1,7 @@
 # Project Name: docker-cgi
 
-# BRIEF DESCRIPTION: an Apache module that allows a user to run one or more CGI programs from within a container.
+# BRIEF DESCRIPTION:
+  * an Apache module that allows a user to run one or more CGI programs from within a container.
 
 # PROJECT OBJECTIVES:
   * To provide an Apache handler, as a first step, to manage the associated container, and to appropriate invoke the CGI program
@@ -57,22 +58,22 @@ Caveat/Bugs:
 
 # ASSUMPTIONS:
   The associated container can be created given a "CONTEXT" defined as a PATH or URL.
-	The CGI program is a given ENTRY point within the container.
-		(https://docs.docker.com/engine/reference/commandline/build/)
+  The CGI program is a given ENTRY point within the container.
+     (https://docs.docker.com/engine/reference/commandline/build/)
 
   We assume that only one such CGI program is delivered via the container
-	We assume that only one such CGI program is delivered within a given directory
+  We assume that only one such CGI program is delivered within a given directory
 
-  Given the appropriate .htaccess directives, these assumptions allows the client 
-	to invoke the web application via a simple URL, e.g., https:///~/directory/
-	(Refer to Apache directives: DirectoryIndex and Rewrite_Rule)
+  Given the appropriate .htaccess directives, these assumptions allows the client to invoke the web application via a simple URL, e.g., https:///~/directory/
+  (Refer to Apache directives: DirectoryIndex and Rewrite_Rule)
 
   It is also planned that these assumptions, with further refinement of this project, can be removed.
-	Under this refinement, the following URLs are possible:
-		https:///~/directory/program1
-		https:///~/directory/program2
-		https:///~/directory/program3
-
+  Under this refinement, the following URLs are possible:
+```
+    https:///~/directory/program1
+    https:///~/directory/program2
+    https:///~/directory/program3
+```
   Each of the programs (program1, program2, program3) may use the same container or different containers.
 
 # INSTALLATION NOTES:
@@ -93,8 +94,8 @@ Caveat/Bugs:
 
     *	E.g., the following envisioned Apache directives could be used to to 
   ```
-		ContainerEngine off | docker | other    # initial implementation will only be for docker containers
+    ContainerEngine off | docker | other    # initial implementation will only be for docker containers
     ContainerCGI   context1 program1			
-		ContainerCGI   context2 program2
-		ContainerCGI   context1 program3
+    ContainerCGI   context2 program2
+    ContainerCGI   context1 program3
 ```
