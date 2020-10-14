@@ -50,15 +50,14 @@ alias docker="echo docker"
 #
 # This script "/usr/lib/cgi-bin/docker-cgi.bash"
 print_usage () {
-    printf "Usage:  docker-cgi\n"
-    printf "\n"
-    printf "\t Used as a Apache Handler\n"
-    printf "\t The following environment variables are expected to be defined:\n"
-    printf "\t\t PATH_INFO:\t\t          the URI path of the .docker-cgi file\n"
-    printf "\t\t PATH_TRANSLATED:    the file system path of the .docker-cgi file\n"
-    printf "\t\t REDIRECT_HANDLER:   the name of the handler: i.e., docker-cgi\n"
-    printf "\n"
+    printf "Usage: docker-cgi\t\t # when called via the Apache Handler\n"
+    printf "Usage: docker-cgi help\n"
     printf "Usage: docker-cgi [DIRECTIVE] FILE\n"
+    printf "\n"
+    printf "\t When used as a Apache Handler, the following environment variables are expected to be defined:\n"
+    printf "\t\t PATH_INFO:\t\t the URI path of the .docker-cgi file\n"
+    printf "\t\t PATH_TRANSLATED:\t the file system path of the .docker-cgi file\n"
+    printf "\t\t REDIRECT_HANDLER:\t the name of the handler: i.e., docker-cgi\n"
     printf "\n"
     printf "\t DIRECTIVE is an action to be taken. A list of available DIRECTIVEs are provided below\n"
     printf "\t FILE\t is the name of a configuration file that used to invoke the Apache Handler\n"
@@ -66,20 +65,20 @@ print_usage () {
     printf "\n"
     printf "Available DIRECTIVEs include:\n"
     printf "\n"
-    printf "\t help:\t  to provide this usage message\n"
-    printf "\t build:\t  to build the a local image from the CONTEXT\n"
-    printf "\t rmi:\t  to remove the image associated with the CONTEXT\n"
-    printf "\t build:\t  to build the container from the associated image\n"
-    printf "\t start:\t  to start the associated container\n"
-    printf "\t exec:\t  to execute a CGI program defined by the ENTRY variable\n"
-    printf "\t stop:\t  to start the associated container\n"
-    printf "\t rm:\t  to remove the associated container\n"
+    printf "\t help:\t to provide this usage message\n"
+    printf "\t build:\t to build the a local image from the CONTEXT\n"
+    printf "\t rmi:\t to remove the image associated with the CONTEXT\n"
+    printf "\t build:\t to build the container from the associated image\n"
+    printf "\t start:\t to start the associated container\n"
+    printf "\t exec:\t to execute a CGI program defined by the ENTRY variable\n"
+    printf "\t stop:\t to start the associated container\n"
+    printf "\t rm:\t to remove the associated container\n"
     printf "\t headers: to emit the HTTP response headers defined within FILE\n"
-    printf "\t envs:\t  to emit the environment variables that will be passed to to ENTRY program\n"
+    printf "\t envs:\t to emit the environment variables that will be passed to to ENTRY program\n"
     printf "\n"
     printf "For testing purposes, this script can be invoked as if it were being called by the Apache server as follows:\n"
     printf "\n"
-    printf "\t $ PATH_TRANSLATED=$FILE docker-cgi \n"
+    printf "\t $ PATH_TRANSLATED=\$FILE docker-cgi \n"
     printf "\n"
     printf "Caveat/Bugs:\n"
     printf "\t - When invoked as a CGI Handler from the command line:\n"
@@ -132,7 +131,7 @@ declare -a HANDLER_VARIABLES=(
 
 
 report_error () {
-    printf "$*\n" >2
+    printf "$*\n" >&2
     exit 1
 }
 
@@ -140,41 +139,40 @@ perform_directive () {
 
     case $1 in
 
-    help )
-        print_usage;
-        ;;
+      help )
+          print_usage;
+          ;;
 	
-    build )
-	    docker build --tag ${IMAGE_TAG} ${CONTEXT}
-	    ;;
-	rmi )
-	    docker rmi ${IMAGE_TAG}
-	    ;;
+      build )
+          docker build --tag ${IMAGE_TAG} ${CONTEXT}
+          ;;
+      rmi )
+          docker rmi ${IMAGE_TAG}
+          ;;
+      create )
+          docker create --name ${CONTAINER_TAG} --interactive --tty ${IMAGE_TAG}
+          ;;
+      start )
+	  docker start ${CONTAINER_TAG}
+	  ;;
+      exec )
+	  ENV_STRING=$(build_cgi_environment)
+	  docker exec ${ENV_STRING} ${CONTAINER_TAG} ${ENTRY} 
+	  ;;
+      stop )
+	  docker stop ${CONTAINER_TAG}
+	  ;;
+      rm )
+	  docker rm ${CONTAINER_TAG}
+	  ;;
 
-	create )
-	    docker create --name ${CONTAINER_TAG} --interactive --tty ${IMAGE_TAG}
-	    ;;
-	start )
-	    docker start ${CONTAINER_TAG}
-	    ;;
-	exec )
-	    ENV_STRING=$(build_cgi_environment)
-	    docker exec ${ENV_STRING} ${CONTAINER_TAG} ${ENTRY} 
-	    ;;
-	stop )
-	    docker stop ${CONTAINER_TAG}
-	    ;;
-	rm )
-	    docker rm ${CONTAINER_TAG}
-	    ;;
-
-	headers )
-	    emit_headers
-	    ;;
+      headers )
+	  emit_headers
+	  ;;
 	
-	envs )
-	    emit_envs
-	    ;;
+      envs )
+	  emit_envs
+	  ;;
     esac
 }
 
@@ -222,8 +220,10 @@ build_cgi_environment () {
 #        PATH_TRANSLATED, PATH_INFO, REDIRECT_HANDLER
 #    Otherwise, the configuration file is the second arguement to the script
 
-{ 
-     if [ $# -eq 0 ] ; then
+{
+    if [ $# -eq 1 -a "$1" == "help" ] && { print_usage; exit 0 }
+	   
+    if [ $# -eq 0 ] ; then
         [ -z "${PATH_TRANSLATED}" ] && report_error "Script invoked improperly"
         CONFIGURATION_FILE=${PATH_TRANSLATED}
     else
