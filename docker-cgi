@@ -282,7 +282,7 @@ build_cgi_environment () {
 
 ###################################################################################################################################################
 # 3. Perform directive provided via script invocation
-[ -z "${DIRECTIVE}" ] &&  { perform_directive ${DIRECTIVE} ; exit 0 ; }
+[ -n "${DIRECTIVE}" ] &&  { perform_directive ${DIRECTIVE} ; exit 0 ; }
 
 
 
