@@ -19,3 +19,5 @@ HEADER[X-header2]="my second header string" # Define an array of HTTP response h
 ENTRY=program1					# The ENTRY point within the container to be executed
 CONTEXT=http://some/context1	# The CONTEXT used to build the container
 								# CONTAINER_CGI[$ENTRY]="${CONTEXT}"
+
+
