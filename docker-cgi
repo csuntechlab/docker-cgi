@@ -44,7 +44,7 @@ alias docker="sudo docker"
 #      WELL, MAYBE --- I NEED TO DETERMINE HOW TO GET PERMS WORKING.   (sudo -u Apache docker-cgi build FILE ???)
 #      AT VERY LEAST -- THIS PORTION OF THE SCRIPT CAN BE USED BY THE SYSTEM TO TEST VARIOUS SUBCOMPONENTS
 #
-# The following is the various usages of the script.  Note that the second argument is the docker command to be executed. Refery
+# The following is the various usages of the script.  Note that the second argument is the docker command to be executed. Refer
 # to the docker documentation for additional information: https://docs.docker.com/engine/reference/commandline/docker.
 #
 # The third argument is the user-supplied configuration file, e.g., FILE="sample.docker-cgi"
@@ -222,15 +222,20 @@ build_cgi_environment () {
 #    Otherwise, the configuration file is the second arguement to the script
 
 {
-    # Quick escape to handle a request for help
-    [ $# -eq 1 -a "$1" == "help" ] && { print_usage; exit 0 ; }
-	   
+    DIRECTIVE="$1"
+    CONFIGURATION_FILE="$2"
+
+    
+    # Called with the "help" command-line arguement
+    [ $# -eq 1 -a "${DIRECTIVE}" == "help" ] && { print_usage; exit 0 ; }
+
+
+    # Called from the web server: i.e., no arguements, driven PATH_TRANSLATED
     if [ $# -eq 0 ] ; then
         [ -z "${PATH_TRANSLATED}" ] && report_error "Script invoked improperly"
         CONFIGURATION_FILE=${PATH_TRANSLATED}
-    else
-        CONFIGURATION_FILE="${2}"
     fi
+
     : ${REDIRECT_HANDLER:=docker-cgi}
     : ${PATH_INFO:=${CONFIGURATION_FILE}}
 
@@ -277,7 +282,7 @@ build_cgi_environment () {
 
 ###################################################################################################################################################
 # 3. Perform directive provided via script invocation
-[ $# -gt 0 ] &&  perform_directive $1 && exit 0
+[ -z "${DIRECTIVE}" ] &&  { perform_directive ${DIRECTIVE} ; exit 0 ; }
 
 
 
