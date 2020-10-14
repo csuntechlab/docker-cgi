@@ -222,19 +222,19 @@ build_cgi_environment () {
 #    Otherwise, the configuration file is the second arguement to the script
 
 {
-    DIRECTIVE="$1"
-    CONFIGURATION_FILE="$2"
+    DIRECTIVE="${1}"
+    CONFIGURATION_FILE="${PATH_TRANSLATED}"
 
     
     # Called with the "help" command-line arguement
     [ $# -eq 1 -a "${DIRECTIVE}" == "help" ] && { print_usage; exit 0 ; }
 
+    # Called with the "FILE" command-line arguement
+    [ -n "${2}" ] && CONFIGURATION_FILE="${2}"
 
-    # Called from the web server: i.e., no arguements, driven PATH_TRANSLATED
-    if [ $# -eq 0 ] ; then
-        [ -z "${PATH_TRANSLATED}" ] && report_error "Script invoked improperly"
-        CONFIGURATION_FILE=${PATH_TRANSLATED}
-    fi
+    # Called via the web server, i.e., no arguements, driven PATH_TRANSLATED
+    [ $# -eq 0 -a -z "${PATH_TRANSLATED}" ] && report_error "Script invoked improperly"
+
 
     : ${REDIRECT_HANDLER:=docker-cgi}
     : ${PATH_INFO:=${CONFIGURATION_FILE}}
