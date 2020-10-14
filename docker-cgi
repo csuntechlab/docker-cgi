@@ -3,6 +3,7 @@
 # For DEBUGGING
 shopt -s expand_aliases
 alias docker="echo docker"
+alias docker="sudo docker"
 
 ###################################################################################################################################################
 # The primary purpose of this script is to execute a CGI program within a docker container.
@@ -43,7 +44,7 @@ alias docker="echo docker"
 #      WELL, MAYBE --- I NEED TO DETERMINE HOW TO GET PERMS WORKING.   (sudo -u Apache docker-cgi build FILE ???)
 #      AT VERY LEAST -- THIS PORTION OF THE SCRIPT CAN BE USED BY THE SYSTEM TO TEST VARIOUS SUBCOMPONENTS
 #
-# The following is the various usages of the script.  Note that the second argument is the docker command to be executed. Refer
+# The following is the various usages of the script.  Note that the second argument is the docker command to be executed. Refery
 # to the docker documentation for additional information: https://docs.docker.com/engine/reference/commandline/docker.
 #
 # The third argument is the user-supplied configuration file, e.g., FILE="sample.docker-cgi"
