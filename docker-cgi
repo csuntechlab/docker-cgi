@@ -221,7 +221,8 @@ build_cgi_environment () {
 #    Otherwise, the configuration file is the second arguement to the script
 
 {
-    if [ $# -eq 1 -a "$1" == "help" ] && { print_usage; exit 0 }
+    # Quick escape to handle a request for help
+    [ $# -eq 1 -a "$1" == "help" ] && { print_usage; exit 0 ; }
 	   
     if [ $# -eq 0 ] ; then
         [ -z "${PATH_TRANSLATED}" ] && report_error "Script invoked improperly"
@@ -285,7 +286,7 @@ build_cgi_environment () {
 #    	a. build image if necessary
 #	    b. build container if necessary
 
-docker start ${CONTAINER_TAG}  2>/dev/nul || {
+docker start ${CONTAINER_TAG}  2>/dev/null || {
 
     HASH=$(docker images --all --filter "reference=${IMAGE_TAG}" --quiet)
     [ -z "${HASH}" ] &&  docker build --tag ${IMAGE_TAG} ${CONTEXT}
