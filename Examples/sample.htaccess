@@ -1,0 +1,9 @@
+DirectoryIndex program.docker
+
+AddHandler dockerfile .docker-cgi
+Action dockerfile "/cgi-bin/docker-cgi"
+
+
+
+
+
