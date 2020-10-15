@@ -39,13 +39,14 @@ Available DIRECTIVEs include:
 	 help:	  to provide this usage message
 	 build:	  to build the a local image from the CONTEXT
 	 rmi:	  to remove the image associated with the CONTEXT
-	 build:	  to build the container from the associated image
+	 create:  to create the container from the associated image
 	 start:	  to start the associated container
 	 exec:	  to execute a CGI program defined by the ENTRY variable
 	 stop:	  to start the associated container
 	 rm:	  to remove the associated container
 	 headers: to emit the HTTP response headers defined within FILE
 	 envs:	  to emit the environment variables that will be passed to to ENTRY program
+	 env_args: to emit the environment variables as used as arguments to docker exec
 
 For testing purposes, this script can be invoked as if it were being called by the Apache server as follows:
 
