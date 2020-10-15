@@ -20,15 +20,15 @@
   1. Copy docker-cgi.cgi into a well known web-assessible directory, e.g., /usr/lib/cgi-bin/
   1. Set appropriate permissions for the docker-cgi.cgi script to be executed
   1. Grant password-less sudo permissions to the docker commands for the web server
-  	* www-data ALL=(ALL) NOPASSWD: /usr/bin/docker
+    * www-data ALL=(ALL) NOPASSWD: /usr/bin/docker
 
 ## USER USAGE NOTES:
   * Develop a git repo that contains your application that can be deployed via a dockerfile
   * Create an appropriate .docker.cgi configuration file
   * Add the following directive to the web folder's .htaccess file
     ```
-      AddHandler dockerfile .docker-cgi
-      Action dockerfile "/cgi-bin/docker-cgi.cgi"
+    AddHandler dockerfile .docker-cgi
+    Action dockerfile "/cgi-bin/docker-cgi.cgi"
     ```
   * A Client can access the CGI program via the URL: https://www.domain.com/~/directory/program.docker-cgi
   
@@ -92,13 +92,13 @@ Each of the programs (program1, program2, program3) may use the same container o
     * define appropriate Apache directives to subsume the role of the config file
     * transform the existing code to allow be used as a Apache Module
     * rewrite the code into C (See: http://linuxdocs.org/HOWTOs/Apache-Overview-HOWTO-12.html)
-    *	E.g., the following envisioned Apache directives could be used to to 
-    ```
+    * E.g., the following envisioned Apache directives could be used to to 
+      ```
       ContainerEngine off | docker | other    # initial implementation will only be for docker containers
       ContainerCGI   context1 program1			
       ContainerCGI   context2 program2
       ContainerCGI   context1 program3
-    ```
+      ```
   * Examine the potential use of [https://podman.io](podman) as another implementation to support containers
   * Create appropriate man pages for the docker-cgi program and the .docker-cgi file format
   * Consider providing an appropriate "make install" process
