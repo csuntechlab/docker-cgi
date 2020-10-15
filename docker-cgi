@@ -158,7 +158,7 @@ perform_directive () {
 	  docker start ${CONTAINER_TAG}
 	  ;;
       exec )
-	  docker exec $(build_env_args) ${CONTAINER_TAG} ${ENTRY} 
+	  eval docker exec $(build_env_args) ${CONTAINER_TAG} ${ENTRY} 
 	  ;;
       stop )
 	  docker stop ${CONTAINER_TAG}
@@ -206,7 +206,8 @@ build_env_args () {
   done
 
   for key in "${!ENVS[@]}"; do 
-     echo -n " -e $key=\"${ENVS[$key]}\""
+      eval value=\${ENVS[$key]}
+      echo -n " -e $key=\"$value\" "
   done
 }
 
@@ -311,10 +312,6 @@ docker start ${CONTAINER_TAG}  2>/dev/null || {
 emit_headers 
 
 
-docker exec $(build_env_args) ${CONTAINER_TAG} ${ENTRY} 
-
-
-
-
-
+eval docker exec $(build_env_args) ${CONTAINER_TAG} ${ENTRY} 
+   # eval is needed in the previous command to ensure the valid quoting of the value returned from $(build_env_args)
 
