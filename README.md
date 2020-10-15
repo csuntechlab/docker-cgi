@@ -3,36 +3,50 @@
 ## BRIEF DESCRIPTION:
   * an Apache module that allows a user to run one or more CGI programs from within a container.
 
-## PROJECT OBJECTIVES:
-  * To provide an Apache handler, as a first step, to manage the associated container, and to appropriate invoke the CGI program
-  * To minimize the amount of steps the user needs to perform to configure their environment
-  * To define the most simplistic configuration file to derive the most appropriate Apache Directives for the module
-
-## CURRENT STATUS:
-  * An Apache handler has been develop that, when trigger, will build, create, and start a docker container, and excute an encompassed CGI program.
-  * The script that drives the handler also provides the user with a number of directors to control the process (mostly for debugging purposes)
-  * A set of examples provided via the [docker-cgi.examples project](https://github.com/csuntechlab/docker-cgi.examples) 
-  * A website that contains the docker-cgi.examples: https://www.sandbox.csun.edu/~steve/docker-cgi
+## CURRENT STATUS (MVP 1):
+  * An "Apache Handler" is provided to exec the CGI program from within a container.
+  * The handler can, as necessary, build, create, and start the appropriate docker images and containers.
+  * The handler, which can also be called from the CLI, provides directives to manage the associated images and containers
+  * A set of examples are provided via the [docker-cgi.examples project](https://github.com/csuntechlab/docker-cgi.examples).
+  * A website that contains the docker-cgi.examples: https://www.sandbox.csun.edu/~steve/docker-cgi.
 
 ## PURPOSE:
-  * To allow a developer to select their entire programming stack, independent of the main OS.
-  * To create an area of isolation between the user's code and the main OS environment.
-  * To eliminate the need to deploy the user's container on an independent web-server
+  * To provide a developer with total control over their programming statck, independent of the web-server environment
+  * To create isolation between the user's code and the main OS environment
+  * To eliminate the need to deploy a user's container on an independent web-server
 
+## SERVER INSTALLATION:
+  1. Install docker on your server
+  1. Copy docker-cgi.cgi into a well known web-assessible directory, e.g., /usr/lib/cgi-bin/
+  1. Set appropriate permissions for the docker-cgi.cgi script to be executed
+  1. Grant password-less sudo permissions to the docker commands for the web server
+  	* www-data ALL=(ALL) NOPASSWD: /usr/bin/docker
+
+## USER USAGE NOTES:
+  * Develop a git repo that contains your application that can be deployed via a dockerfile
+  * Create an appropriate .docker.cgi configuration file
+  * Add the following directive to the web folder's .htaccess file
+    ```
+      AddHandler dockerfile .docker-cgi
+      Action dockerfile "/cgi-bin/docker-cgi.cgi"
+    ```
+  * A Client can access the CGI program via the URL: https://www.domain.com/~/directory/program.docker-cgi
+  
+	
 ## USAGE:
-```$ ./docker-cgi help ../docker-cgi.examples/cat.docker-cgi
-Usage: docker-cgi [DIRECTIVE] FILE
+```$ docker-cgi help
+Usage: docker-cgi                    # When called via the Apache Handler
+Usage: docker-cgi DIRECTIVE FILE
 Usage: docker-cgi help
 
-	 DIRECTIVE is an action to be taken. A list of available DIRECTIVEs are provided below
-	 FILE	 is the name of a configuration file that used to invoke the Apache Handler
-		 This file has the extension of .docker-cgi"Usage: docker-cgi
+  DIRECTIVE is an action to be taken. A list of available DIRECTIVEs are provided below
+  FILE is the name of a configuration file that used to invoke the Apache Handler
+      This file has the extension of .docker-cgi
 
-	 Used as a Apache Handler
-	 The following environment variables are expected to be defined:
-		 PATH_INFO:		          the URI path of the .docker-cgi file
-		 PATH_TRANSLATED:    the file system path of the .docker-cgi file
-		 REDIRECT_HANDLER:   the name of the handler: i.e., docker-cgi
+      The following environment variables are expected to be defined:
+         PATH_INFO:		          the URI path of the .docker-cgi file
+         PATH_TRANSLATED:    the file system path of the .docker-cgi file
+         REDIRECT_HANDLER:   the name of the handler: i.e., docker-cgi
 
 Available DIRECTIVEs include:
 
@@ -59,34 +73,18 @@ Caveat/Bugs:
 ```
 
 ## ASSUMPTIONS:
-  * The associated container can be created given a "CONTEXT" defined as a PATH or URL.
-  * The CGI program is a given ENTRY point within the container. (https://docs.docker.com/engine/reference/commandline/build/)
+  * The associated container can be created given a "CONTEXT" defined URL.
+  * Multiple .docker-cgi configuration files can reference the same CONTEXT
+  * Given the appropriate .htaccess directives, URLs can be simplified, as examplified within the following tables:
 
-  * We assume that only one such CGI program is delivered via the container
-  * We assume that only one such CGI program is delivered within a given directory
-
-  * Given the appropriate .htaccess directives, these assumptions allows the client to invoke the web application via a simple URL, 
-    * e.g., https:///~/directory/ (Refer to Apache directives: DirectoryIndex and Rewrite_Rule)
-
-  * With further refinement of this project, URLs can be simplified, as examplified within the following tables:
-
-Future URL   | Current URL
+Revised URL   | Default URL
 ------------ | -------------
-https:///~user/directory/program1 | https:///~user/directory/program1.docker-cgi
-https:///~user/directory/program2 | https:///~user/directory/program2.docker-cgi
-https:///~user/directory/program3 | https:///~user/directory/program3.docker-cgi
+https://www.domain.com/~user/directory/program1 | https://www.domain.com/~user/directory/program1.docker-cgi
+https://www.domain.com/~user/directory/program2 | https://www.domain.com/~user/directory/program2.docker-cgi
+https://www.domain.com/~user/directory/program3 | https://www.domain.com/~user/directory/program3.docker-cgi
 
 Each of the programs (program1, program2, program3) may use the same container or different containers.
 
-## INSTALLATION NOTES:
-  * A web adminstrator places the handler code in a well-known cgi-bin directory, e.g. "/cgi-bin/docker-cgi"
-  * The developer places the configuratition, with the well-known extension, e.g., ".docker-cgi", into an appropriate web-folder
-  * The developer places the an .htaccess file is said web-folder to invoke the application
-    ```
-      AddHandler dockerfile .docker-cgi
-      Action dockerfile "/cgi-bin/docker-cgi"
-    ```
-  * A Client can access the code via the URL: https:///~/directory/program.<extention>
 
 ## ENHANCEMENTS:
   * Create a Apache module:
@@ -100,3 +98,7 @@ Each of the programs (program1, program2, program3) may use the same container o
       ContainerCGI   context2 program2
       ContainerCGI   context1 program3
     ```
+  * Examine the potential use of [https://podman.io](podman) as another implementation to support containers
+  * Create appropriate man pages for the docker-cgi program and the .docker-cgi file format
+  * Consider providing an appropriate "make install" process
+  
