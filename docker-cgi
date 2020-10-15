@@ -133,7 +133,7 @@ declare -a HANDLER_VARIABLES=(
 
 
 report_error () {
-    printf "$*\n" >&2
+    printf "$*\n" 1>&2
     exit 1
 }
 
@@ -303,7 +303,7 @@ fi
 #    	a. build image if necessary
 #	    b. build container if necessary
 
-docker start ${CONTAINER_TAG}  2>/dev/null || {
+docker start ${CONTAINER_TAG} 1>&2  || {
 
     HASH=$(docker images --all --filter "reference=${IMAGE_TAG}" --quiet)
     [ -z "${HASH}" ] &&  docker build --tag ${IMAGE_TAG} ${CONTEXT}
@@ -311,8 +311,8 @@ docker start ${CONTAINER_TAG}  2>/dev/null || {
     HASH=$(docker ps --all --filter "name=${CONTAINER_TAG}" --quiet)
     [ -z "${HASH}" ] && docker create --name ${CONTAINER_TAG} --interactive --tty ${IMAGE_TAG}
   
-    docker start ${CONTAINER_TAG}  2>/dev/null
-}
+    docker start ${CONTAINER_TAG}
+} 1>&2
 
 # 5. Emit headers
 # 6. Build the CGI Environment
