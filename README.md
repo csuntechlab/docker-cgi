@@ -20,7 +20,7 @@
   1. Copy docker-cgi.cgi into a well known web-assessible directory, e.g., /usr/lib/cgi-bin/
   1. Set appropriate permissions for the docker-cgi.cgi script to be executed
   1. Grant password-less sudo permissions to the docker commands for the web server
-    * www-data ALL=(ALL) NOPASSWD: /usr/bin/docker
+     1. www-data ALL=(ALL) NOPASSWD: /usr/bin/docker
 
 ## USER USAGE NOTES:
   * Develop a git repo that contains your application that can be deployed via a dockerfile
