@@ -158,8 +158,7 @@ perform_directive () {
 	  docker start ${CONTAINER_TAG}
 	  ;;
       exec )
-	  ENV_STRING=$(build_cgi_environment)
-	  docker exec ${ENV_STRING} ${CONTAINER_TAG} ${ENTRY} 
+	  docker exec $(build_env_args) ${CONTAINER_TAG} ${ENTRY} 
 	  ;;
       stop )
 	  docker stop ${CONTAINER_TAG}
@@ -311,30 +310,10 @@ docker start ${CONTAINER_TAG}  2>/dev/null || {
 # 7. Call docker exec
 emit_headers 
 
-ENV_ARGS=$(build_env_args)
-docker exec ${ENV_ARGS} ${CONTAINER_TAG} ${ENTRY} 
+
+docker exec $(build_env_args) ${CONTAINER_TAG} ${ENTRY} 
 
 
-
-
-
-
-
-
-# Sysadmin is free to delete
-#  - local image
-#  - local container
-# Sysadmin is free to stop containers
-# Sysadmin is free to augment performance options
-
-# Issues:
-# - how to delete containers
-# - how to delete images
-
-
-# - how to force
-#    -- a new build:  remove image
-#    -- a new create: remove the container
 
 
 
