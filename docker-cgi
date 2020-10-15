@@ -285,7 +285,7 @@ build_env_args () {
 
 ###################################################################################################################################################
 # 3. Perform directive provided as part of the command-line invocation (not via the handler)
-if [ -z "${DIRECTIVE}" ] ; then
+if [ -n "${DIRECTIVE}" ] ; then
     # check for proper ownership 
     if [ "${OWNER}" == "${USER}" ] ; then
         perform_directive ${DIRECTIVE}
