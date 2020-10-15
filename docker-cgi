@@ -306,12 +306,17 @@ fi
 docker start ${CONTAINER_TAG} 1>&2  || {
 
     HASH=$(docker images --all --filter "reference=${IMAGE_TAG}" --quiet)
-    [ -z "${HASH}" ] &&  docker build --tag ${IMAGE_TAG} ${CONTEXT}
+    [ -z "${HASH}" ] &&  { docker build --tag ${IMAGE_TAG} ${CONTEXT} 2>/dev/null ;
+			   echo "Docker Build: ${IMAGE_TAG} ${CONTEXT}" ;
+			 }
     
     HASH=$(docker ps --all --filter "name=${CONTAINER_TAG}" --quiet)
-    [ -z "${HASH}" ] && docker create --name ${CONTAINER_TAG} --interactive --tty ${IMAGE_TAG}
-  
+    [ -z "${HASH}" ] && { docker create --name ${CONTAINER_TAG} --interactive --tty ${IMAGE_TAG}
+			  echo "Docker Create: ${CONTAINER_TAG}" ;
+                        }
     docker start ${CONTAINER_TAG}
+    echo "Docker Start: ${CONTAINER_TAG}"
+			  
 } 1>&2
 
 # 5. Emit headers
