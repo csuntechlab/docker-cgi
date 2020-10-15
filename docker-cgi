@@ -265,17 +265,17 @@ build_env_args () {
 
     
     DIR_TRANSLATED="$(dirname ${CONFIGURATION_FILE})"
-    NAME="$(basename -s .docker-cgi ${CONFIGURATION_FILE})"
-
     DIR_INFO="$(dirname ${PATH_INFO})"
 
-    INODE=$(stat --format "%i" ${DIR_TRANSLATED} )
+    NAME="$(basename -s .docker-cgi ${CONFIGURATION_FILE})"
+    CONTEXT_HASH="$(openssl md5 <<< ${CONTEXT} | cut -c10- )"
+    OWNER=$(stat --format "%U" ${CONFIGURATION_FILE} )
 
 
     # The use of $USER is a poor person's protection protocol
     # we might need to append a ":tag" to each of the following
-    CONTAINER_TAG="cgi.${USER}.${INODE}.${NAME}"
-    IMAGE_TAG="cgi.${USER}.${INODE}.${NAME}"
+    IMAGE_TAG="cgi.${OWNER}.${CONTEXT_HASH}"
+    CONTAINER_TAG="cgi.${OWNER}.${CONTEXT_HASH}"
 
     # Redefined CGI Variables because of the use of a handler
     SCRIPT_FILENAME="${DIR_TRANSLATED}/${ENTRY}"
@@ -284,8 +284,16 @@ build_env_args () {
 }
 
 ###################################################################################################################################################
-# 3. Perform directive provided via script invocation
-[ -n "${DIRECTIVE}" ] &&  { perform_directive ${DIRECTIVE} ; exit 0 ; }
+# 3. Perform directive provided as part of the command-line invocation (not via the handler)
+if [ -z "${DIRECTIVE}" ] ; then
+    # check for proper ownership 
+    if [ "${OWNER}" == "${USER}" ] ; then
+        perform_directive ${DIRECTIVE}
+	exit 0
+    else
+	report_error "Not owner of the image/container"
+    fi
+fi
 
 
 
