@@ -73,9 +73,10 @@ Caveat/Bugs:
 ```
 
 ## ASSUMPTIONS:
-  * The associated container can be created given a "CONTEXT" defined URL.
+  * The associated container can be created given a "CONTEXT" defined as a PATH or URL.
   * Multiple .docker-cgi configuration files can reference the same CONTEXT
-  * Given the appropriate .htaccess directives, URLs can be simplified, as examplified within the following tables:
+  * Given the appropriate .htaccess directives, URLs can be simplified
+    * (Refer to Apache directives: DirectoryIndex and Rewrite_Rule)
 
 Revised URL   | Default URL
 ------------ | -------------
