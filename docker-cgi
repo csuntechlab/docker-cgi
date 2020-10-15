@@ -76,7 +76,7 @@ print_usage () {
     printf "\t rm:\t to remove the associated container\n"
     printf "\t headers: to emit the HTTP response headers defined within FILE\n"
     printf "\t envs:\t to emit the environment variables that will be passed to to ENTRY program\n"
-    printf "\t env_args:\t to emit the enironment varibles as used as arguments to docker exec\n"
+    printf "\t env_args:\t to emit the environment variables as used as arguments to docker exec\n"
     printf "\n"
     printf "For testing purposes, this script can be invoked as if it were being called by the Apache server as follows:\n"
     printf "\n"
