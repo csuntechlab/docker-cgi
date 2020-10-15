@@ -12,7 +12,8 @@ alias docker="sudo docker"
 # These actions occur when a client URL references the CGI program and is subsequently invoked by the Apache server via the CGI protocol.
 #
 # To minimize the execution time, the system will maintain the image and container.  Moreover, the container will remain running
-# remain running as needed.  That is to say that the cost to build the image and create the container only occurs necessary.
+# as needed.  That is to say that the cost to build the image and create the container only occurs necessary.
+#
 #
 # The user provides a configuration file, e.g., command.docker-cgi, to define the following items:
 #
@@ -38,22 +39,22 @@ alias docker="sudo docker"
 # (See http://httpd.apache.org/docs/current/mod/mod_actions.html)
 #
 #    AddHandler dockerfile .docker-cgi
-#    Action dockerfile "/cgi-bin/docker-cgi"
+#    Action dockerfile "/cgi-bin/docker-cgi.cgi"
 #
-# This script can also be invoked directly by the user to test and manage their environment.
-#      WELL, MAYBE --- I NEED TO DETERMINE HOW TO GET PERMS WORKING.   (sudo -u Apache docker-cgi build FILE ???)
-#      AT VERY LEAST -- THIS PORTION OF THE SCRIPT CAN BE USED BY THE SYSTEM TO TEST VARIOUS SUBCOMPONENTS
+# This script is designed to all an indivdual user to call this script from the CLI for testing purposes and image/container management.
+# As such, installation of the docker-cgi.cgi script must be assigned appropriate permission bits to have it effectively run as the web user.
+# (I.e., the SETUID bit needs to be in effect.)
 #
-# The following is the various usages of the script.  Note that the second argument is the docker command to be executed. Refer
-# to the docker documentation for additional information: https://docs.docker.com/engine/reference/commandline/docker.
+# The following 'print_usage' function provides the usage of this script.  Note that in many cases the second argument is a docker subcommand
+# that is to be executed. Refer to the docker documentation for additional information: https://docs.docker.com/engine/reference/commandline/docker.
 #
 # The third argument is the user-supplied configuration file, e.g., FILE="sample.docker-cgi"
 #
 # This script "/usr/lib/cgi-bin/docker-cgi.bash"
 print_usage () {
-    printf "Usage: docker-cgi\t\t # when called via the Apache Handler\n"
-    printf "Usage: docker-cgi help\n"
-    printf "Usage: docker-cgi [DIRECTIVE] FILE\n"
+    printf "Usage: $0 \t\t # when called via the Apache Handler\n"
+    printf "Usage: $0 help\n"
+    printf "Usage: $0 DIRECTIVE FILE\n"
     printf "\n"
     printf "\t When used as a Apache Handler, the following environment variables are expected to be defined:\n"
     printf "\t\t PATH_INFO:\t\t the URI path of the .docker-cgi file\n"
